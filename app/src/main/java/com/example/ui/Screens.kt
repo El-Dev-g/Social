@@ -8879,16 +8879,25 @@ fun VoiceMessagePlayer(mediaUri: String, isMe: Boolean) {
                     isPlaying = false
                 } else {
                     if (mediaPlayer == null) {
-                        mediaPlayer = MediaPlayer().apply {
-                            setDataSource(context, Uri.parse(mediaUri))
-                            prepare()
-                            setOnCompletionListener {
-                                isPlaying = false
+                        try {
+                            mediaPlayer = MediaPlayer().apply {
+                                setDataSource(context, Uri.parse(mediaUri))
+                                setOnPreparedListener {
+                                    it.start()
+                                    isPlaying = true
+                                }
+                                setOnCompletionListener {
+                                    isPlaying = false
+                                }
+                                prepareAsync()
                             }
+                        } catch (e: Exception) {
+                            android.util.Log.e("VoiceMessagePlayer", "Error preparing player", e)
                         }
+                    } else {
+                        mediaPlayer?.start()
+                        isPlaying = true
                     }
-                    mediaPlayer?.start()
-                    isPlaying = true
                 }
             },
             modifier = Modifier.size(32.dp)
